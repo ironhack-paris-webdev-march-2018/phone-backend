@@ -7,6 +7,7 @@ const favicon      = require('serve-favicon');
 const mongoose     = require('mongoose');
 const logger       = require('morgan');
 const path         = require('path');
+const cors         = require('cors');
 
 const session    = require("express-session");
 const MongoStore = require('connect-mongo')(session);
@@ -44,6 +45,8 @@ app.use(require('node-sass-middleware')({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
 
+// Might be important to be before session (?)
+app.use(cors());
 
 // Enable authentication using session + passport
 app.use(session({
@@ -57,6 +60,9 @@ require('./passport')(app);
 
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
+
+const phoneRouter = require('./routes/phone-api-router');
+app.use('/api', phoneRouter);
 
 
 module.exports = app;
