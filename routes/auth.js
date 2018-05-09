@@ -21,13 +21,17 @@ authRoutes.post("/signup", (req, res, next) => {
   const password = req.body.password;
   const rol = req.body.role;
   if (username === "" || password === "") {
-    res.render("auth/signup", { message: "Indicate username and password" });
+    const err = new Error("Username or password invalid");
+    err.status = 400;
+    next(err);
     return;
   }
 
   User.findOne({ username }, "username", (err, user) => {
     if (user !== null) {
-      res.render("auth/signup", { message: "The username already exists" });
+      const err = new Error("The username already exists");
+      err.status = 400;
+      next(err);
       return;
     }
 
@@ -42,9 +46,9 @@ authRoutes.post("/signup", (req, res, next) => {
 
     newUser.save((err) => {
       if (err) {
-        res.render("auth/signup", { message: "Something went wrong" });
+        next(err);
       } else {
-        res.redirect("/");
+        res.json({ userInfo: newUser });
       }
     });
   });

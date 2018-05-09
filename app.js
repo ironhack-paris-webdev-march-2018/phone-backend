@@ -45,8 +45,11 @@ app.use(require('node-sass-middleware')({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
 
-// Might be important to be before session (?)
-app.use(cors());
+// Should be before session
+app.use(cors({
+  credentials: true,
+  origin: ['http://localhost:4200']
+}));
 
 // Enable authentication using session + passport
 app.use(session({
@@ -59,7 +62,7 @@ require('./passport')(app);
 
 
 const authRoutes = require('./routes/auth');
-app.use('/auth', authRoutes);
+app.use('/api', authRoutes);
 
 const phoneRouter = require('./routes/phone-api-router');
 app.use('/api', phoneRouter);
