@@ -15,7 +15,7 @@ const MongoStore = require('connect-mongo')(session);
 
 mongoose.Promise = Promise;
 mongoose
-  .connect('mongodb://localhost/phone-backend', {useMongoClient: true})
+  .connect(process.env.MONGODB_URI, {useMongoClient: true})
   .then(() => {
     console.log('Connected to Mongo!')
   }).catch(err => {
@@ -69,3 +69,9 @@ app.use('/api', phoneRouter);
 
 
 module.exports = app;
+
+
+// Send Angular's HTML for all other routes
+app.use((req, res, next) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
