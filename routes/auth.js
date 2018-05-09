@@ -8,12 +8,30 @@ const bcrypt = require("bcrypt");
 const bcryptSalt = 10;
 
 
-authRoutes.post("/login", passport.authenticate("local", {
-  successRedirect: "/",
-  failureRedirect: "/auth/login",
-  failureFlash: true,
-  passReqToCallback: true
-}));
+authRoutes.post("/login", (req, res, next) => {
+  const myFunction =
+    passport.authenticate("local", (err, theUser) => {
+      if (err) {
+        next(err);
+        return;
+      }
+
+      if (!theUser) {
+        const err = new Error("Log in failed!");
+        err.status = 400;
+        next(err);
+        return;
+      }
+
+      req.login(theUser, () => {
+        // clear the password before sending (it's a security risk)
+        theUser.password = undefined;
+        res.json({ userInfo: theUser });
+      });
+    });
+
+  myFunction(req, res, next);
+});
 
 
 authRoutes.post("/signup", (req, res, next) => {
@@ -48,7 +66,12 @@ authRoutes.post("/signup", (req, res, next) => {
       if (err) {
         next(err);
       } else {
-        res.json({ userInfo: newUser });
+        // login the user immediately after they've signed up
+        req.login(newUser, () => {
+          // clear the password before sending (it's a security risk)
+          newUser.password = undefined;
+          res.json({ userInfo: newUser });
+        });
       }
     });
   });
@@ -56,7 +79,16 @@ authRoutes.post("/signup", (req, res, next) => {
 
 authRoutes.get("/logout", (req, res) => {
   req.logout();
-  res.redirect("/");
+  res.json({ userInfo: null });
+});
+
+authRoutes.get("/checklogin", (req, res, next) => {
+  if (req.user) {
+    // clear the password before sending (it's a security risk)
+    req.user.password = undefined;
+  }
+
+  res.json({ userInfo: req.user });
 });
 
 module.exports = authRoutes;

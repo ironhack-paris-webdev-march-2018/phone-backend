@@ -57,7 +57,7 @@ app.use(session({
   resave: true,
   saveUninitialized: true,
   store: new MongoStore( { mongooseConnection: mongoose.connection })
-}))
+}));
 require('./passport')(app);
 
 
